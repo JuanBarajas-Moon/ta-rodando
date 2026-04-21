@@ -35,7 +35,7 @@ export async function getRunContext(runUrl: string): Promise<GithubRunContext> {
       const logRes = await githubFetch(`${base}/actions/jobs/${failedJob.id}/logs`);
       if (logRes.ok) {
         const raw = await logRes.text();
-        logs = raw.split("\n").slice(-200).join("\n");
+        logs = raw.split("\n").slice(-100).join("\n").slice(0, 4000);
       }
     }
   }
