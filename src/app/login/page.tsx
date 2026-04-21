@@ -9,9 +9,6 @@ export default function LoginPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          hd: "moonventures.com.br",
-        },
       },
     });
   }
@@ -52,8 +49,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-gray-600 text-xs text-center">
-          Acesso restrito a e-mails<br />
-          @moonventures.com.br · @minimalclub.com.br · @hoomy.com.br
+          Monitor interno Moon Ventures
         </p>
       </div>
     </main>
