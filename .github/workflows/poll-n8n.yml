@@ -1,0 +1,22 @@
+name: Poll N8N
+
+# Vercel Hobby só permite cron 1x/dia. Usamos GitHub Actions como
+# scheduler externo pra bater no endpoint /api/cron/poll-n8n a cada 15min.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: # permite disparo manual
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call poll-n8n endpoint
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --silent --show-error --fail \
+            --max-time 30 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/poll-n8n"
