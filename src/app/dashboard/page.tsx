@@ -1,4 +1,5 @@
 import { getSupabaseServer } from "@/lib/supabase-server";
+import AnalysisButton from "./analysis-button";
 
 type Alert = {
   id: string;
@@ -88,17 +89,18 @@ function renderGithub(a: Alert) {
       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
         {brTime(a.sent_at)}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 space-y-1">
         {a.payload.runUrl ? (
           <a
             href={a.payload.runUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:underline text-xs"
+            className="text-blue-400 hover:underline text-xs block"
           >
             Ver run →
           </a>
         ) : null}
+        <AnalysisButton alertId={a.id} />
       </td>
     </tr>
   );
@@ -121,17 +123,18 @@ function renderN8n(a: Alert) {
       <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
         {brTime(a.sent_at)}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 space-y-1">
         {link ? (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:underline text-xs"
+            className="text-blue-400 hover:underline text-xs block"
           >
             Ver execução →
           </a>
         ) : null}
+        <AnalysisButton alertId={a.id} />
       </td>
     </tr>
   );
