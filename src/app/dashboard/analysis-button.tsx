@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const ANALYSIS_ENABLED = false;
+const ANALYSIS_ENABLED = true;
 
 export default function AnalysisButton({ alertId }: { alertId: string }) {
   if (!ANALYSIS_ENABLED) return null;
