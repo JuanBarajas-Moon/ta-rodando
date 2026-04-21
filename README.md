@@ -1,6 +1,12 @@
-# [Seu Nome] — Projeto Bootcamp Claude Code
+# Juan Carlos Souza Barajas Lorenzo — Projeto Bootcamp Claude Code
 
 > Bootcamp Claude Code — Moon Ventures (2026)
+
+## Sobre o projeto
+
+- **Problema**: Integrações que quebram silenciosamente na Moon Ventures. Dezenas de scripts Python e workflows N8N rodando em produção e quando um falha, ninguém sabe até aparecer reclamação de cliente ou dado sumir do dashboard. O time de dados perde horas investigando o que quebrou, quando quebrou e por quê.
+- **Solução proposta**: Um agente inteligente que monitora continuamente os scripts Python e workflows N8N da Moon Ventures, detecta falhas silenciosas e envia alertas automáticos com diagnóstico no WhatsApp antes que alguém precise reclamar.
+- **Slug**: `ta-rodando`
 
 _Última atualização: 21/04 10:52_
 

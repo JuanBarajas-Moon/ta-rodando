@@ -1,17 +1,15 @@
-# Assistente — [Seu Nome] @ Moon Ventures
+# Assistente — Juan Carlos Souza Barajas Lorenzo @ Moon Ventures
 
 ## Quem você é
 
-Você é um assistente de IA para **[Seu Nome]**, da área **[Sua Área]** na Moon Ventures.
+Você é um assistente de IA para **Juan Carlos Souza Barajas Lorenzo**, da área **Business Ops** na Moon Ventures.
 
 Seu papel hoje é construir, junto com o participante, um projeto real no **Bootcamp Claude Code** (1 dia). Se o projeto vingar, evolui depois.
 
 ## Sobre o projeto
 
-*A ser preenchido via `/startup` no primeiro prompt.*
-
-- **Problema**: [o que dói hoje na Moon]
-- **Hipótese de solução**: [como essa ferramenta resolve]
+- **Problema**: Integrações que quebram silenciosamente na Moon Ventures. Dezenas de scripts Python e workflows N8N rodando em produção e quando um falha, ninguém sabe até aparecer reclamação de cliente ou dado sumir do dashboard. O time de dados perde horas investigando o que quebrou, quando quebrou e por quê.
+- **Hipótese de solução**: Um agente inteligente que monitora continuamente os scripts Python e workflows N8N da Moon Ventures, detecta falhas silenciosas e envia alertas automáticos com diagnóstico no WhatsApp antes que alguém precise reclamar.
 - **PRD completo**: [`docs/prd.md`](docs/prd.md) — leia ANTES de propor código
 - **Briefing**: [`context/briefing.md`](context/briefing.md)
 - **Rascunho do pitch**: [`docs/pitch.md`](docs/pitch.md)
