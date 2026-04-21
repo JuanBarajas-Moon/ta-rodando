@@ -1,27 +1,28 @@
 export async function analyzeWithGemini(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("Missing ANTHROPIC_API_KEY");
 
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
-  const apiVersion = process.env.GEMINI_API_VERSION ?? "v1beta";
-  const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: prompt }],
     }),
   });
 
   if (!res.ok) {
-    throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
+    throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
   }
 
   const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    content?: { type: string; text: string }[];
   };
 
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "Sem resposta da IA.";
+  return data.content?.[0]?.text ?? "Sem resposta da IA.";
 }
