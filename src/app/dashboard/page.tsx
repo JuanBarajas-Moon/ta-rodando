@@ -1,6 +1,4 @@
 import { getSupabaseServer } from "@/lib/supabase-server";
-import { redirect } from "next/navigation";
-import LogoutButton from "./logout-button";
 
 type Alert = {
   id: string;
@@ -22,8 +20,6 @@ function brTime(iso: string) {
 
 export default async function DashboardPage() {
   const supabase = await getSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const { data: alerts } = await supabase
     .from("alerts_sent")
@@ -36,15 +32,9 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Tá Rodando?</h1>
-          <p className="text-gray-400 text-sm">Últimas 50 falhas detectadas</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-500 text-sm">{user.email}</span>
-          <LogoutButton />
-        </div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Tá Rodando?</h1>
+        <p className="text-gray-400 text-sm">Últimas 50 falhas detectadas</p>
       </div>
 
       <Section title="GitHub Actions" emoji="📦" alerts={github} renderRow={renderGithub} />
