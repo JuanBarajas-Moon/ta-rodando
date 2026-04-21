@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { listRecentErrors } from "@/lib/n8n";
 import { sendWhatsApp } from "@/lib/evolution";
-import { hasBeenAlerted, markAlerted } from "@/lib/dedup";
+import { tryReserveAlert, removeAlert } from "@/lib/dedup";
 import { formatN8nFailure } from "@/lib/format";
 
 export const runtime = "nodejs";
@@ -20,7 +20,12 @@ export async function GET(request: Request) {
   let skipped = 0;
 
   for (const execution of errors) {
-    if (await hasBeenAlerted("n8n", execution.id)) {
+    const reserve = await tryReserveAlert("n8n", execution.id, {
+      workflowId: execution.workflowId,
+      workflowName: execution.workflowName,
+    });
+
+    if (!reserve.fresh) {
       skipped++;
       continue;
     }
@@ -35,13 +40,10 @@ export async function GET(request: Request) {
 
     const result = await sendWhatsApp(message);
     if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: 502 });
+      await removeAlert(reserve.id);
+      return NextResponse.json({ error: result.error, alerted, skipped }, { status: 502 });
     }
 
-    await markAlerted("n8n", execution.id, {
-      workflowId: execution.workflowId,
-      workflowName: execution.workflowName,
-    });
     alerted++;
   }
 

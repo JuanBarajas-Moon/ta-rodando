@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { env } from "@/lib/env";
 import { sendWhatsApp } from "@/lib/evolution";
-import { hasBeenAlerted, markAlerted } from "@/lib/dedup";
+import { tryReserveAlert, removeAlert } from "@/lib/dedup";
 import { formatGithubFailure } from "@/lib/format";
 
 export const runtime = "nodejs";
@@ -53,7 +53,13 @@ export async function POST(request: Request) {
 
   const runId = String(payload.workflow_run.id);
 
-  if (await hasBeenAlerted("github", runId)) {
+  const reserve = await tryReserveAlert("github", runId, {
+    repo: payload.repository.full_name,
+    workflow: payload.workflow_run.name,
+    runUrl: payload.workflow_run.html_url,
+  });
+
+  if (!reserve.fresh) {
     return NextResponse.json({ ignored: true, reason: "already alerted" });
   }
 
@@ -68,14 +74,9 @@ export async function POST(request: Request) {
 
   const result = await sendWhatsApp(message);
   if (!result.ok) {
+    await removeAlert(reserve.id);
     return NextResponse.json({ error: result.error }, { status: 502 });
   }
-
-  await markAlerted("github", runId, {
-    repo: payload.repository.full_name,
-    workflow: payload.workflow_run.name,
-    runUrl: payload.workflow_run.html_url,
-  });
 
   return NextResponse.json({ alerted: true, runId });
 }
