@@ -1,12 +1,18 @@
 # Variáveis de ambiente (senhas, tokens, API keys)
 .env
+.env*.local
 
 # Sistema operacional
 .DS_Store
 Thumbs.db
 
-# Node.js (se usar)
+# Node / Next.js
 node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
 
 # Python (se usar)
 __pycache__/
@@ -21,3 +27,6 @@ temp/
 # IDE
 .vscode/
 .idea/
+
+# Vercel
+.vercel

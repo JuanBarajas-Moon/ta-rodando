@@ -1,7 +1,6 @@
 # PRD — ta-rodando
 
-> Esqueleto criado pelo `/startup`. Completar em 15min às 13h, ANTES de abrir o Claude pra codar.
-> **Regra**: Claude deve ler este arquivo antes de propor qualquer código.
+> Fonte da verdade do que está sendo construído. Claude deve ler este arquivo antes de propor qualquer código. Plano de execução detalhado vive em `docs/plano.md`.
 
 ## Problema
 
@@ -9,49 +8,53 @@ Integrações que quebram silenciosamente na Moon Ventures. Dezenas de scripts P
 
 ## Usuário
 
-**Quem vai usar essa ferramenta?** (preencher às 13h)
+**Quem vai usar**: time de dados + Business Ops da Moon Ventures. Pessoas que mantêm as integrações Python e workflows N8N em produção e hoje só descobrem falhas quando o cliente reclama ou o dashboard some com os números.
 
-*Ex: "Analistas do time de dados que hoje ficam sabendo das falhas só quando o cliente reclama ou o dashboard some com os números."*
-
-**O que o usuário faz hoje pra resolver isso (manual/workaround)?** (preencher às 13h)
+**O que fazem hoje pra resolver (workaround)**: abrem manualmente o painel do N8N (Atlas) e a aba Actions do GitHub, ou esperam um cliente abrir ticket. Tempo médio de detecção: horas a dias.
 
 ## Objetivo
 
-Um agente inteligente que monitora continuamente os scripts Python e workflows N8N da Moon Ventures, detecta falhas silenciosas e envia alertas automáticos com diagnóstico no WhatsApp antes que alguém precise reclamar.
+Um agente que monitora continuamente os workflows N8N self-hosted (Atlas) e as GitHub Actions da Moon, detecta falhas silenciosas e envia alertas automáticos com link direto no WhatsApp via Evolution API — antes que alguém precise reclamar.
 
-## Requisitos (o que PRECISA ter pra funcionar)
+## Requisitos críticos (o que PRECISA ter hoje)
 
-*Preencher às 13h. Máximo 5 — se passou disso, cortar escopo.*
+- [ ] `POST /api/webhook/github` recebe eventos `workflow_run` e alerta no WhatsApp quando `conclusion=failure`, validando a assinatura HMAC do GitHub.
+- [ ] `GET /api/cron/poll-n8n` lista executions com status `error` da última hora via API do N8N e alerta no WhatsApp, executando a cada 15min via Vercel Cron.
+- [ ] Dedup persistido em Supabase (tabela `alerts_sent`) — a mesma falha nunca gera 2 alertas.
+- [ ] Mensagens formatadas com contexto: repo/workflow, branch/execution, ator, link direto, horário BR.
+- [ ] Deploy em produção na Vercel com todas as envs configuradas.
 
-- [ ] Requisito crítico 1
-- [ ] Requisito crítico 2
-- [ ] Requisito crítico 3
+## Fora do escopo (NÃO vai ter hoje)
 
-## Fora do escopo (o que NÃO vai ter hoje)
-
-*Preencher às 13h. Ser explícito. Cada item aqui é 1h salva.*
-
-- Login social (Google/GitHub) — usar só email/senha ou Supabase magic link
-- Mobile responsivo polido — ok se quebrar no celular
-- Integrações com sistemas reais (TOTVS, HubSpot) — simular com mock
+- Auto-diagnóstico com IA (Claude lendo stack trace e sugerindo causa)
+- Dashboard web com histórico de falhas
+- Comando reverso "status" via WhatsApp
+- Agrupamento de múltiplos alertas em 1 mensagem
+- Silenciar workflow temporariamente
+- Autenticação de usuários
+- Mobile responsivo polido (praticamente não tem UI)
 - Testes automatizados
-- <adicione os seus>
+- Deploy no servidor Moon (fica pra semana que vem se vingar)
 
 ## Métrica de sucesso
 
-**Como você vai saber que funciona?** 1 frase concreta com ação + resultado.
+**Durante o pitch, quebro uma GitHub Action ao vivo (repo `ta-rodando-demo`) e em menos de 30 segundos chega no WhatsApp um alerta formatado com nome do repo, workflow, branch, ator e link do run.**
 
-*Ex: "Um script Python falha em produção, em menos de 2 minutos chega no WhatsApp do responsável um alerta com o nome do script, o erro e o horário — sem ninguém ter precisado abrir nenhum painel."*
+Se isso funciona end-to-end em produção, o produto está pronto.
 
 ## Stack
 
-- **Hosting**: Vercel
-- **Banco + auth**: Supabase
-- **Linguagem/framework**: _____ (preencher quando decidir — sugestão: Next.js + TypeScript)
-- **Outras libs**: _____ (preencher conforme for usando)
+- **Hosting**: Vercel (serverless functions + Cron Jobs)
+- **Linguagem/framework**: Next.js 14 (App Router) + TypeScript
+- **DB**: Supabase (Postgres) — tabela `alerts_sent` pra dedup
+- **WhatsApp**: Evolution API self-hosted
+- **Monitorados**: GitHub Actions (via webhook) + N8N Atlas (via polling da API)
 
 ## Decisões de arquitetura (append ao longo do dia)
 
-*Use essa seção pra registrar escolhas técnicas importantes à medida que aparecem.*
-
-- <ex: "decidi usar Supabase Auth em vez de rolar JWT próprio — economiza 2h">
+- **11h30** — Stack Next.js/TS escolhida em detrimento de Python/FastAPI: menos atrito na Vercel, Vercel Cron nativo, Claude escreve TS bem. O Python do plano original fica pra eventual migração depois.
+- **11h30** — Dedup em Supabase (obrigatório do bootcamp) em vez de SQLite local do plano original.
+- **11h30** — Deploy Vercel hoje (regra do bootcamp). Deploy no servidor Moon fica pra depois se o projeto vingar.
+- **11h30** — Scheduler via Vercel Cron `*/15 * * * *`. Plano B: GitHub Action agendada batendo no endpoint caso Hobby não ative cron.
+- **11h30** — Service role do Supabase usada diretamente pelo backend (routes `/api/*` rodam server-side). Sem RLS no MVP — a tabela só é acessada pelo backend.
+- **11h30** — Webhook GitHub validado via HMAC SHA256 com `GITHUB_WEBHOOK_SECRET`. Cron endpoint protegido com `CRON_SECRET` via header `Authorization: Bearer <secret>`.
