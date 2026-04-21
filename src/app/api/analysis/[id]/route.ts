@@ -21,12 +21,23 @@ export async function GET(
   _req: Request,
   { params }: { params: { id: string } },
 ) {
+  try {
+    return await handleAnalysis(params.id);
+  } catch (e) {
+    return NextResponse.json(
+      { error: (e as Error).message },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleAnalysis(id: string) {
   const supabase = getSupabase();
 
   const { data: alert, error } = await supabase
     .from("alerts_sent")
     .select("id, source, external_id, payload, analysis_text, analysis_at")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error || !alert) {
@@ -95,7 +106,7 @@ Seja direto e prático. Máximo 300 palavras.`;
   await supabase
     .from("alerts_sent")
     .update({ analysis_text: analysis, analysis_at: new Date().toISOString() })
-    .eq("id", params.id);
+    .eq("id", id);
 
   return NextResponse.json({ analysis, cached: false });
 }
