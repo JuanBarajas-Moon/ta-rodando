@@ -131,38 +131,87 @@ O último comando (`code .`) abre a pasta do projeto dentro do VS Code. Um VS Co
 
 ---
 
-## Fase 5 — Rodar o Claude e colar a sua chave
+## Fase 5 — Configurar a chave de API e rodar o Claude
 
-Abre o terminal de novo dentro do **novo VS Code** (Terminal → New Terminal). Digita:
+**IMPORTANTE — leia antes de digitar `claude`:**
+
+As versões atuais do Claude Code **não mostram mais** a opção "colar API key" na tela inicial — elas tentam te jogar pra login no browser (Claude account ou Anthropic Console via web). Pra usar a chave do bootcamp, a gente define ela como **variável de ambiente** ANTES de rodar `claude`. Com a variável setada, o Claude abre direto sem pedir login.
+
+Abre o terminal de novo dentro do **novo VS Code** (Terminal → New Terminal).
+
+### Passo 1 — Criar o arquivo `.env` com a chave
+
+No terminal, digita:
+
+```bash
+cp .env.example .env
+```
+
+Isso cria o arquivo `.env` a partir do modelo. Agora edita ele:
+
+- Na lista de arquivos do VS Code (lado esquerdo), clica no arquivo chamado **`.env`** (não no `.env.example`)
+- Vai aparecer uma linha: `ANTHROPIC_API_KEY=sk-ant-...`
+- **Apaga tudo depois do `=`** e **cola a sua chave inteira** (começa com `sk-ant-api03-...`)
+- A linha deve ficar assim: `ANTHROPIC_API_KEY=sk-ant-api03-SUACHAVEINTEIRAAQUI`
+- **Não coloca aspas** na chave. Não coloca espaço antes nem depois do `=`.
+- Salva com `Ctrl+S` (Windows) ou `Cmd+S` (Mac)
+
+### Passo 2 — Exportar a chave no terminal
+
+No terminal, cola **este comando exato** e aperta Enter:
+
+```bash
+export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY .env | cut -d= -f2)
+```
+
+Isso lê a chave do `.env` e coloca no ambiente do terminal. Não aparece nada como resposta — **é normal**, funcionou.
+
+**Confere** que deu certo:
+
+```bash
+echo $ANTHROPIC_API_KEY
+```
+
+Deve imprimir a sua chave começando com `sk-ant-api03-...`. Se imprimir linha vazia, algo deu errado no Passo 1 — abre o `.env` e revisa.
+
+### Passo 3 — Rodar o Claude
+
+Agora sim:
 
 ```bash
 claude
 ```
 
-Na primeira vez, o Claude pergunta como você quer fazer login:
+Como a variável de ambiente está setada, o Claude **não vai pedir login** — abre direto pronto pra uso.
 
-```
-How would you like to log in?
-> Claude account (recommended)
-  Anthropic Console (API key)
-```
+> Se ele **ainda** mostrar a tela de "Claude account / Anthropic Console": a variável não foi lida. Aperta `Ctrl+C` pra sair, refaz o Passo 2 **no mesmo terminal** (a variável só vale no terminal onde você exportou — se abrir outro, tem que exportar de novo) e roda `claude` de novo.
 
-- Usa a **seta pra baixo** no teclado
-- Seleciona **Anthropic Console (API key)**
-- Aperta **Enter**
+### Toda vez que abrir um terminal novo
 
-Ele pede a chave:
+A variável `ANTHROPIC_API_KEY` só vale **no terminal atual**. Se fechar o VS Code ou abrir um terminal novo, você precisa rodar o export de novo antes de `claude`:
 
-```
-Paste your API key:
+```bash
+export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY .env | cut -d= -f2)
+claude
 ```
 
-- **Cola a chave que você recebeu** (começa com `sk-ant-api03-...`)
-- Aperta **Enter**
+### Opcional — persistir pra não exportar toda vez
 
-Pronto. Claude está autenticado e aberto.
+Se quer que a chave carregue automaticamente em todo terminal novo, roda **uma vez**:
 
-> A chave fica salva em `~/.claude/` — você não precisa colar de novo nas próximas vezes.
+**No Mac (zsh):**
+```bash
+echo 'export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY ~/moon-bootcamp/meu-projeto/.env | cut -d= -f2)' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**No Windows (Git Bash):**
+```bash
+echo 'export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY ~/moon-bootcamp/meu-projeto/.env | cut -d= -f2)' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Agora a chave é carregada automaticamente em todo terminal novo.
 
 ---
 
@@ -211,10 +260,26 @@ Permissão de escrita.
 - **Mac:** usa `sudo npm install -g @anthropic-ai/claude-code`
 - **Windows:** VS Code aberto como administrador
 
-### Claude abre mas diz "Invalid API key"
+### Claude abre a tela "How would you like to log in?" mesmo depois do export
 
-1. Confere que você copiou a chave INTEIRA (começa com `sk-ant-api03-` e termina normalmente com `AA`)
-2. Roda `claude /logout` → `claude` → cola de novo
+A variável de ambiente não foi lida. Aperta `Ctrl+C` pra sair. Depois:
+
+1. Confere que você está no diretório certo: `pwd` deve mostrar algo como `.../moon-bootcamp/meu-projeto`
+2. Confere que o `.env` existe e tem a chave: `cat .env | grep ANTHROPIC` deve imprimir a linha com a chave
+3. Roda de novo o export no **mesmo terminal**: `export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY .env | cut -d= -f2)`
+4. Confere: `echo $ANTHROPIC_API_KEY` deve imprimir a chave
+5. Agora sim: `claude`
+
+Se abriu um terminal novo depois do export, a variável some — tem que exportar de novo **no terminal em que você vai rodar `claude`**.
+
+### Claude abre mas diz "Invalid API key" ou "Authentication failed"
+
+1. Confere que você copiou a chave INTEIRA (começa com `sk-ant-api03-` e termina em `AA`)
+2. Abre o `.env` e verifica: não tem aspas, não tem espaço antes ou depois do `=`, nenhum caractere estranho
+3. Refaz o export: `export ANTHROPIC_API_KEY=$(grep ANTHROPIC_API_KEY .env | cut -d= -f2)`
+4. `claude` de novo
+
+Se persistir, chama no canal — a chave pode ter sido revogada.
 
 ### Git pede usuário e senha ao clonar
 
