@@ -50,7 +50,7 @@ export async function listRecentErrors(
   if (recent.length === 0) return [];
 
   // Busca nomes em batch: 1 chamada por workflowId único
-  const uniqueIds = [...new Set(recent.map((e) => e.workflowId))];
+  const uniqueIds = Array.from(new Set(recent.map((e) => e.workflowId)));
   const names = await Promise.all(uniqueIds.map(fetchWorkflowName));
   const nameMap = Object.fromEntries(
     uniqueIds.map((id, i) => [id, names[i]]),
