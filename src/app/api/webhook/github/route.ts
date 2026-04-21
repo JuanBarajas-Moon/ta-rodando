@@ -8,23 +8,30 @@ import { formatGithubFailure } from "@/lib/format";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function verifySignature(body: string, signature: string | null): boolean {
+function verifySignature(rawBytes: Buffer, signature: string | null): boolean {
   if (!signature) return false;
   const hmac = crypto.createHmac("sha256", env.githubWebhookSecret);
-  const digest = `sha256=${hmac.update(body).digest("hex")}`;
+  const digest = `sha256=${hmac.update(rawBytes).digest("hex")}`;
   try {
-    return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
+    return crypto.timingSafeEqual(
+      Buffer.from(digest, "utf8"),
+      Buffer.from(signature, "utf8"),
+    );
   } catch {
     return false;
   }
 }
 
 export async function POST(request: Request) {
-  const rawBody = await request.text();
+  const rawBytes = Buffer.from(await request.arrayBuffer());
+  const rawBody = rawBytes.toString("utf8");
   const signature = request.headers.get("x-hub-signature-256");
 
-  if (!verifySignature(rawBody, signature)) {
-    return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+  if (!verifySignature(rawBytes, signature)) {
+    return NextResponse.json(
+      { error: "invalid signature", hasHeader: Boolean(signature), bodyLength: rawBytes.length },
+      { status: 401 },
+    );
   }
 
   const event = request.headers.get("x-github-event");
